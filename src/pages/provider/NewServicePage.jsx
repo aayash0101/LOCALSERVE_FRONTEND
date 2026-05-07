@@ -18,6 +18,16 @@ const NewServicePage = () => {
     priceType: 'fixed',
     location: { district: '', city: '' },
   });
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -35,7 +45,16 @@ const NewServicePage = () => {
     }
     setLoading(true);
     try {
-      await api.post('/services', { ...form, price: Number(form.price) });
+      const { data: newService } = await api.post('/services', { ...form, price: Number(form.price) });
+
+      if (image) {
+        const formData = new FormData();
+        formData.append('image', image);
+        await api.post(`/upload/service/${newService._id}`, formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+        });
+      }
+
       toast.success('Service created successfully!');
       navigate('/provider/services');
     } catch (err) {
@@ -139,6 +158,28 @@ const NewServicePage = () => {
                 onChange={handleChange}
                 placeholder="e.g. Thamel"
                 className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-orange-400 transition-colors"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-gray-700 mb-1.5">Service Image</label>
+            <div className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center hover:border-orange-300 transition-colors cursor-pointer"
+              onClick={() => document.getElementById('serviceImage').click()}
+            >
+              {imagePreview ? (
+                <img src={imagePreview} alt="Preview" className="w-full h-40 object-cover rounded-lg" />
+              ) : (
+                <div className="py-6">
+                  <p className="text-gray-400 text-sm">Click to upload an image</p>
+                  <p className="text-gray-300 text-xs mt-1">PNG, JPG up to 5MB</p>
+                </div>
+              )}
+              <input
+                id="serviceImage"
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
               />
             </div>
           </div>
