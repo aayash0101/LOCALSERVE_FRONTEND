@@ -16,6 +16,7 @@ import CustomerDashboard from './pages/customer/CustomerDashboard';
 import BookingsPage from './pages/customer/BookingsPage';
 import MessagesPage from './pages/customer/MessagesPage';
 import ChatThreadPage from './pages/customer/ChatThreadPage';
+import ProfilePage from './pages/customer/ProfilePage';
 
 // Provider pages
 import ProviderDashboard from './pages/provider/ProviderDashboard';
@@ -47,6 +48,7 @@ function App() {
       <Route path="/bookings" element={<ProtectedRoute roles={['customer']}><BookingsPage /></ProtectedRoute>} />
       <Route path="/messages" element={<ProtectedRoute roles={['customer']}><MessagesPage /></ProtectedRoute>} />
       <Route path="/messages/:id" element={<ProtectedRoute roles={['customer']}><ChatThreadPage /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute roles={['customer', 'provider', 'admin']}><ProfilePage /></ProtectedRoute>} />
 
       {/* Provider */}
       <Route path="/provider/dashboard" element={<ProtectedRoute roles={['provider']}><ProviderDashboard /></ProtectedRoute>} />
