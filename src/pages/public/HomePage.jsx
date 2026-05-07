@@ -1,6 +1,11 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import Layout from '../../components/layout/Layout';
+import api from '../../api/axios';
 import { Search, Star, Shield, Clock, ChevronRight } from 'lucide-react';
+
+const ServiceMap = lazy(() => import('../../components/common/ServiceMap'));
 
 const categories = [
   { name: 'Cleaning', icon: '🧹', slug: 'cleaning' },
@@ -14,6 +19,14 @@ const categories = [
 ];
 
 const HomePage = () => {
+  const { data: servicesData } = useQuery({
+    queryKey: ['homeServices'],
+    queryFn: async () => {
+      const { data } = await api.get('/services?limit=50');
+      return data;
+    },
+  });
+
   return (
     <Layout>
       {/* Hero */}
@@ -24,7 +37,7 @@ const HomePage = () => {
             <span className="text-orange-500">Delivered to Your Door</span>
           </h1>
           <p className="text-lg text-gray-600 mb-10 max-w-xl mx-auto">
-            Find trusted local service providers across Nepal | from cleaning to tutoring, plumbing to beauty.
+            Find trusted local service providers across Nepal — from cleaning to tutoring, plumbing to beauty.
           </p>
 
           {/* Search bar */}
@@ -89,6 +102,35 @@ const HomePage = () => {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* Map Section */}
+      <section className="py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <h2 className="text-2xl font-bold text-gray-900">Services Near You</h2>
+              <p className="text-gray-500 text-sm mt-1">Find providers across Nepal</p>
+            </div>
+            <Link
+              to="/services"
+              className="text-orange-500 hover:text-orange-600 text-sm font-semibold flex items-center gap-1"
+            >
+              View all <ChevronRight size={16} />
+            </Link>
+          </div>
+          <Suspense
+            fallback={
+              <div className="h-96 bg-gray-100 rounded-2xl flex items-center justify-center text-gray-400">
+                Loading map...
+              </div>
+            }
+          >
+            <div style={{ height: '400px' }} className="rounded-2xl overflow-hidden shadow-md border border-gray-100">
+              <ServiceMap services={servicesData?.services || []} />
+            </div>
+          </Suspense>
         </div>
       </section>
 
