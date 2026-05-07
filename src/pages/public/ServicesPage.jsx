@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, lazy, Suspense } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Layout from '../../components/layout/Layout';
 import api from '../../api/axios';
-import { Search, SlidersHorizontal, Star, MapPin } from 'lucide-react';
+import { Search, SlidersHorizontal, Star, MapPin, Map, Grid } from 'lucide-react';
+
+const ServiceMap = lazy(() => import('../../components/common/ServiceMap'));
 
 const categories = ['cleaning', 'plumbing', 'electrical', 'tutoring', 'beauty', 'moving', 'repair', 'gardening', 'other'];
 
@@ -27,6 +29,7 @@ const ServicesPage = () => {
   const [maxPrice, setMaxPrice] = useState('');
   const [page, setPage] = useState(1);
   const [showFilters, setShowFilters] = useState(false);
+  const [viewMode, setViewMode] = useState('grid');
 
   const { data, isLoading } = useQuery({
     queryKey: ['services', keyword, category, minPrice, maxPrice, page],
@@ -58,6 +61,29 @@ const ServicesPage = () => {
             <SlidersHorizontal size={16} />
             Filters
           </button>
+          {/* View Toggle */}
+          <div className="flex gap-2">
+            <button
+              onClick={() => setViewMode('grid')}
+              className={`p-2.5 rounded-xl border transition-colors ${
+                viewMode === 'grid'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
+              }`}
+            >
+              <Grid size={16} />
+            </button>
+            <button
+              onClick={() => setViewMode('map')}
+              className={`p-2.5 rounded-xl border transition-colors ${
+                viewMode === 'map'
+                  ? 'bg-orange-500 text-white border-orange-500'
+                  : 'bg-white text-gray-600 border-gray-200 hover:border-orange-300'
+              }`}
+            >
+              <Map size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -130,6 +156,12 @@ const ServicesPage = () => {
             <p className="text-lg font-semibold">No services found</p>
             <p className="text-sm mt-1">Try adjusting your search or filters</p>
           </div>
+        ) : viewMode === 'map' ? (
+          <Suspense fallback={<div className="text-center py-20 text-gray-400">Loading map...</div>}>
+            <div style={{ height: '600px' }} className="rounded-2xl overflow-hidden shadow-md border border-gray-100">
+              <ServiceMap services={data?.services} />
+            </div>
+          </Suspense>
         ) : (
           <>
             <p className="text-sm text-gray-500 mb-4">{data?.total} services found</p>
@@ -167,7 +199,6 @@ const ServiceCard = ({ service }) => (
     to={`/services/${service._id}`}
     className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all overflow-hidden group"
   >
-    {/* Image */}
     <div className="h-44 bg-gradient-to-br from-orange-100 to-orange-50 flex items-center justify-center overflow-hidden">
       {service.images?.[0] ? (
         <img src={service.images[0]} alt={service.title} className="w-full h-full object-cover" />
